@@ -410,6 +410,15 @@ async def generate_pdf_report(data: dict, original_form: dict, id_number: str) -
                 y -= 18
             y -= 10
 
+        # The extraction LLM sometimes returns amounts as strings like "52,500.00".
+        def sanitize_currency(value):
+            if isinstance(value, str):
+                value = value.replace(",", "")
+            try:
+                return float(value) if value else 0.0
+            except (ValueError, TypeError):
+                raise ValueError(f"Invalid numeric value: {value}")
+
         # Title
         c.setFont("Helvetica-Bold", 18)
         c.drawString(50, y, "LOAN APPLICATION REPORT")
@@ -444,9 +453,9 @@ async def generate_pdf_report(data: dict, original_form: dict, id_number: str) -
 
         # Section 4: Extracted Details & Ratios
         draw_section("Extracted Details & Ratios", [
-            ("Total Credits", f"${data.get('total_credits', 0):,.2f}" if data.get('total_credits') else "N/A"),
-            ("Total Debits", f"${data.get('total_debits', 0):,.2f}" if data.get('total_debits') else "N/A"),
-            ("Average Balance", f"${data.get('average_balance', 0):,.2f}" if data.get('average_balance') else "N/A"),
+            ("Total Credits", f"${sanitize_currency(data.get('total_credits', 0)):,.2f}" if data.get('total_credits') is not None else "N/A"),
+            ("Total Debits", f"${sanitize_currency(data.get('total_debits', 0)):,.2f}" if data.get('total_debits') is not None else "N/A"),
+            ("Average Balance", f"${sanitize_currency(data.get('average_balance', 0)):,.2f}" if data.get('average_balance') is not None else "N/A"),
             ("DTI Ratio", str(data.get("dti_ratio", "N/A"))),
             ("FOIR", str(data.get("foir", "N/A"))),
             ("Income Stability Score", str(data.get("income_stability_score", "N/A"))),
