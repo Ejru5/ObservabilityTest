@@ -417,7 +417,7 @@ async def generate_pdf_report(data: dict, original_form: dict, id_number: str) -
             try:
                 return float(value) if value else 0.0
             except (ValueError, TypeError):
-                raise ValueError(f"Invalid numeric value: {value}")
+                return 0.0
 
         # Title
         c.setFont("Helvetica-Bold", 18)
@@ -467,9 +467,9 @@ async def generate_pdf_report(data: dict, original_form: dict, id_number: str) -
         draw_section("Approval Details", [
             ("Decision", data.get("approval_decision", "N/A")),
             ("Reason", data.get("approval_reason", "N/A")),
-            ("Eligible Loan Amount", f"${data.get('eligible_loan', 0):,.2f}"),
-            ("Approved Amount", f"${data.get('approved_amount', 0):,.2f}"),
-            ("Requested Amount", f"${data.get('requested_loan_amount', 0):,.2f}"),
+            ("Eligible Loan Amount", f"${sanitize_currency(data.get('eligible_loan', 0)):,.2f}"),
+            ("Approved Amount", f"${sanitize_currency(data.get('approved_amount', 0)):,.2f}"),
+            ("Requested Amount", f"${sanitize_currency(data.get('requested_loan_amount', 0)):,.2f}"),
         ])
 
         c.save()
