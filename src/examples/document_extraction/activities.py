@@ -40,7 +40,7 @@ async def segment_document_pages(document_id: str, document_type: str, pages: in
 @workflows.activity()
 async def extract_structured_fields(handoff_state: Dict[str, Any], document_id: str) -> Dict[str, Any]:
     """Extract party, effective date and total value, citing the regions each came from."""
-    pages = handoff_state["segmented_pages"]
+    pages = handoff_state["segmented_pages"] if "segmented_pages" in handoff_state else handoff_state["pages"]
     record = services.document_record(document_id) or {"regions": "0", "party": "", "date": "", "value": ""}
     region_ids = [f"r{i:03d}" for i in range(int(record["regions"]))]
 
