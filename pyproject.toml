@@ -1,0 +1,18 @@
+[project]
+name = "loan-workflow"
+version = "0.1.0"
+description = "Loan Processing Workflow with Mistral AI"
+requires-python = ">=3.12"
+dependencies = [
+    "mistralai>=1.0.0",
+    "mistralai-workflows[mistralai]>=3.0.0,<4",
+    "pydantic",
+    "python-dotenv",
+    "reportlab",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.11",
+]
