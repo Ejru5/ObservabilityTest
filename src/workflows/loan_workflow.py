@@ -385,12 +385,6 @@ async def generate_pdf_report(data: dict, original_form: dict, id_number: str) -
         from reportlab.lib.pagesizes import letter
         from reportlab.pdfgen import canvas as pdf_canvas
 
-        # --- PII Redaction ---
-        redacted_id = f"{id_number[:4]}****{id_number[-1]}" if id_number else "N/A"
-        redacted_name = f"{original_form.get('applicant_name', '')[0]}****" if original_form.get('applicant_name') else "N/A"
-        redacted_account = f"****{data.get('account_number', '')[-4:]}" if data.get('account_number') else "N/A"
-        # --- End PII Redaction ---
-
         os.makedirs("output", exist_ok=True)
         output_path = os.path.join("output", f"{id_number}.pdf")
 
@@ -414,8 +408,9 @@ async def generate_pdf_report(data: dict, original_form: dict, id_number: str) -
                     c.setFont("Helvetica", 10)
                 c.drawString(70, y, f"{key}: {value}")
                 y -= 18
-                
-        # --- Numeric Sanitization ---
+            y -= 10
+
+        # The extraction LLM sometimes returns amounts as strings like "52,500.00".
         def sanitize_currency(value):
             if isinstance(value, str):
                 value = value.replace(",", "")
@@ -423,8 +418,6 @@ async def generate_pdf_report(data: dict, original_form: dict, id_number: str) -
                 return float(value) if value else 0.0
             except (ValueError, TypeError):
                 raise ValueError(f"Invalid numeric value: {value}")
-        # --- End Numeric Sanitization ---
-            y -= 10
 
         # Title
         c.setFont("Helvetica-Bold", 18)
@@ -447,8 +440,7 @@ async def generate_pdf_report(data: dict, original_form: dict, id_number: str) -
         # Section 2: Identity Details
         draw_section("Identity Details", [
             ("ID Type", original_form.get("id_type", "N/A").upper()),
-            ("ID Number", redacted_id),
-            ("Applicant Name", redacted_name),
+            ("ID Number", original_form.get("id_number", "N/A")),
         ])
 
         # Section 3: Loan Details
@@ -469,7 +461,6 @@ async def generate_pdf_report(data: dict, original_form: dict, id_number: str) -
             ("Income Stability Score", str(data.get("income_stability_score", "N/A"))),
             ("Risk Score", f"{data.get('final_score', 'N/A')}/100"),
             ("Risk Flags", str(data.get("risk_flags", []))),
-            ("Account Number", redacted_account),
         ])
 
         # Section 5: Approval Details
